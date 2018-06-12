@@ -1,16 +1,14 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import ImageminWebpackPlugin from 'imagemin-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-
-// import { HotModuleReplacementPlugin } from 'webpack';
+import { HotModuleReplacementPlugin } from 'webpack';
 import { resolve } from 'path';
 import getContext from './config';
-import * as nunjucksFilters from './views/filters';
 
 module.exports = async (env = 'development') => ({
   mode: env,
   entry: {
-    bundle: ['./client/index.js'],
+    bundle: ['./index.js'],
   },
   resolve: {
     modules: ['node_modules', 'bower_components'],
@@ -38,10 +36,16 @@ module.exports = async (env = 'development') => ({
               [
                 'env',
                 {
-                  // Via: https://docs.google.com/document/d/1mByh6sT8zI4XRyPKqWVsC2jUfXHZvhshS5SlHErWjXU/view
-                  browsers: ['last 2 versions', 'ie >= 11', 'safari >= 10', 'ios >= 9'],
+                  browsers: 'defaults',
                 },
               ],
+              ['react'],
+            ],
+            plugins: [
+              'transform-object-rest-spread',
+              'transform-class-properties',
+              'syntax-dynamic-import',
+              'transform-runtime',
             ],
           },
         },
@@ -75,29 +79,9 @@ module.exports = async (env = 'development') => ({
         ],
       },
       {
-        test: /\.(html|njk)$/,
-        use: [
-          {
-            loader: 'html-loader',
-            options: {
-              attrs: ['img:src', 'link:href'],
-              root: resolve(__dirname, 'client'),
-            },
-          },
-          {
-            loader: 'nunjucks-html-loader',
-            options: {
-              searchPaths: [resolve(__dirname, 'views')],
-              filters: nunjucksFilters,
-              context: await getContext(env),
-            },
-          },
-        ],
-      },
-      {
         test: /\.scss/,
         use: [
-          env === 'production' ? MiniCssExtractPlugin.loader : 'style-loader',
+          // env === 'production' ? MiniCssExtractPlugin.loader : 'style-loader',
           { loader: 'css-loader', options: { sourceMap: true } },
           { loader: 'postcss-loader', options: { sourceMap: true } },
           {
@@ -106,24 +90,25 @@ module.exports = async (env = 'development') => ({
               sourceMap: true,
               includePaths: ['bower_components'],
             },
-          }
+          },
         ],
       },
     ],
   },
   devServer: {
-    hot: false, // Needed for live-reloading Nunjucks templates.
+    hot: true,
     allowedHosts: ['.ngrok.io', 'local.ft.com'],
   },
   devtool: 'source-map',
   plugins: [
-    // new HotModuleReplacementPlugin(), // Re-enable if devServer.hot is set to true
+    new HotModuleReplacementPlugin(), // Re-enable if devServer.hot is set to true
     new MiniCssExtractPlugin({
       filename: env === 'production' ? '[name].[contenthash].css' : '[name].css',
     }),
-    // instructions for generating multiple HTML files: https://github.com/jantimon/html-webpack-plugin#generating-multiple-html-files
     new HtmlWebpackPlugin({
-      template: 'client/index.html',
+      template: './views/server.js',
+      templateParameters: await getContext(),
+      filename: 'index.html',
     }),
     env === 'production'
       ? new ImageminWebpackPlugin({ test: /\.(jpe?g|png|gif|svg)$/i })
