@@ -20,7 +20,7 @@ export default (context) => {
             ${helmet.link.toString()}
       </head>
       <body ${helmet.bodyAttributes.toString()}>
-          <div id="content">
+          <div id="app">
             ${app}
           </div>
       </body>

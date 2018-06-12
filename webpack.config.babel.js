@@ -8,7 +8,7 @@ import getContext from './config';
 module.exports = async (env = 'development') => ({
   mode: env,
   entry: {
-    bundle: ['./index.js'],
+    bundle: ['./client/index.js'],
   },
   resolve: {
     modules: ['node_modules', 'bower_components'],

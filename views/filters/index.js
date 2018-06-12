@@ -26,7 +26,7 @@ export function strftime(format = defaultFTDateFormat) {
 }
 
 export function ftdate(d) {
-  return strftime(d);
+  return strftime()(d);
 }
 
 export function plain(str, stripListLeaders = true) {
